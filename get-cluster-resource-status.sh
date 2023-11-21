@@ -31,7 +31,9 @@ do
   total_used_mem_gi="$(echo "${total_used_mem_gi}+${used_mem_gi}" | bc -l)"
   total_unused_cpu_base="$(echo "${total_unused_cpu_base}+${unused_cpu_base}" | bc -l)"
   total_unused_mem_gi="$(echo "${total_unused_mem_gi}+${unused_mem_gi}" | bc -l)"
+
+  printf '%s %.1f %.2fGi\n' "${node}" "${total_used_cpu_base}" "${total_used_mem_gi}"
 done < nodes.tmp
 
-printf 'Total used: %.1f CPU %.2fGi RAM\n' "${total_used_cpu_base}" "${total_used_mem_gi}"
-printf 'Total unused: %.1f CPU %.2fGi RAM\n' "${total_unused_cpu_base}" "${total_unused_mem_gi}"
+printf 'Total %.1f %.2fGi\n' "${total_used_cpu_base}" "${total_used_mem_gi}"
+printf 'Total %.1f %.2fGi\n' "${total_unused_cpu_base}" "${total_unused_mem_gi}"
