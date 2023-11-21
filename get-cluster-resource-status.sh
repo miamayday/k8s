@@ -23,7 +23,7 @@ while IFS= read -r node
 do
   "${workspace}"/get-node-resource-status.sh "${node}" > status.tmp
   used_cpu_base="$(grep 'Used:' status.tmp | awk '{print $2}' | grep -oE '^(\.|[0-9])+')"
-  used_mem_gi="$(grep 'Unused:' status.tmp | awk '{print $4}' | grep -oE '^(\.|[0-9])+')"
+  used_mem_gi="$(grep 'Used:' status.tmp | awk '{print $4}' | grep -oE '^(\.|[0-9])+')"
   unused_cpu_base="$(grep 'Unused:' status.tmp | awk '{print $2}' | grep -oE '^(\.|[0-9])+')"
   unused_mem_gi="$(grep 'Unused:' status.tmp | awk '{print $4}' | grep -oE '^(\.|[0-9])+')"
   
