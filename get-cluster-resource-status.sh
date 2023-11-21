@@ -12,7 +12,7 @@ add_to_total() {
 
 kubectl get node | tail -n +2 | awk '{print $1}' > "${workspace}"/nodes.tmp
 
-printf 'NODE USED_CPU USED_MEM UNUSED_CPU UNUSED_MEM\n'
+printf 'NODE USED_CPU USED_MEM UNUSED_CPU UNUSED_MEM RESERVED_CPU UNRESERVED_CPU\n'
 
 total_used_cpu_base=0
 total_used_mem_gi=0
