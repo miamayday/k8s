@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# Binary notation (Ki,Mi,Gi,Ti,Pi,Ei)
+# SI notation (K,M,G,T,P,E)
+
 convert_cpu_to_base() {
   amount="$(echo "${1}" | grep -oE '^(\.|[0-9])+')"
   unit="$(echo "${1}" | grep -oE '([a-z]|[A-Z])+$')"
@@ -20,15 +23,24 @@ convert_mem_to_gi() {
   if [ -z "${unit}" ]  # bytes
   then
     echo "${amount}*2^-30" | bc -l
-  elif [ "${unit}" = 'K' ] || [ "${unit}" = 'Ki' ]  # kibibytes
+  elif [ "${unit}" = 'Ki' ]  # kibibytes
   then
     echo "${amount}*2^-20" | bc -l
-  elif [ "${unit}" = 'M' ] || [ "${unit}" = 'Mi' ]  # mebibytes
+  elif [ "${unit}" = 'K' ]  # kilobytes
+  then
+    echo "${amount}*10^3*2^-20" | bc -l
+  elif [ "${unit}" = 'Mi' ]  # mebibytes
   then
     echo "${amount}*2^-10" | bc -l
-  elif [ "${unit}" = 'G' ] || [ "${unit}" = 'Gi' ]  # gibibytes
+  elif [ "${unit}" = 'M' ]  # megabytes
+  then
+    echo "${amount}*10^6*2^-20" | bc -l
+  elif [ "${unit}" = 'Gi' ]  # gibibytes
   then
     echo "${amount}"
+  elif [ "${unit}" = 'G' ]  # gigabytes
+  then
+    echo "${amount}*10^9*2^-30" | bc -l
   else
     echo "Unknown unit: ${unit}"
   fi
