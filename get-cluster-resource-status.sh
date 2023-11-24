@@ -8,28 +8,11 @@ trap exit SIGINT ERR
 trap clean_up EXIT
 
 usage_message="
-Usage: ./${0##*/} <region> <tenant> <clusters> [--dry-run]
+Usage: ./${0##*/}
 
-Back up all clusters in a TKGi environment.
-  region         sprod
-                 tlab
-  tenant         arek-hyte
-                 arek-prod
-                 labtest
-                 pksdemo2
-                 region
-  clusters       Cluster1,...,ClusterN
-  --dry-run      Dry-run
+Get cluster resource status.
   -h, --help     Print usage message.
   -v, --verbose  Enable verbose output.
-
-Examples:
-
-  # Back up cluster sprod-support in TKGi SPROD Region
-  ./${0##*/} sprod region sprod-support
-
-  # Back up clusters elakekasittely-test and elakekasittely-prod in TKGi AREK PROD
-  ./${0##*/} sprod arek-prod elakekasittely-test,elakekasittely-prod
 "
 
 usage() {
@@ -42,10 +25,6 @@ POSITIONAL_ARGS=''  # Arrays not supported in POSIX
 while [ "${#}" -gt 0 ]
 do
   case "${1}" in
-    --dry-run)
-      dry_run=true
-      shift
-      ;;
     -h|--help)
       usage
       ;;
