@@ -1,23 +1,36 @@
 # Kubernetes Guide
 
-## Find applications by their environment variables
+## Find applications by their environment variable
 
 ```bash
-# Find applications that use PostgreSQL
-kubectl get deploy,ds,sts -A -o json | jq -r '.items[] | "\(.metadata.name) \(.spec.template.spec.containers[] | try .env[].value | select(. != null) | select(match("jdbc:postgresql")))"'
+keyword=jdbc:postgresql
+keyword=redis
 
-# Find pods that use PostgreSQL
-kubectl get po -A -o json | jq -r '.items[] | "\(.metadata.name) \(.spec.containers[] | try .env[].value | select(. != null) | select(match("jdbc:postgresql")))"'
+# Find applications whose environment variable contains a keyword
+kubectl get deploy,ds,sts -A -o json | jq -r --arg keyword "${keyword}" '.items[] | "\(.metadata.name) \(.spec.template.spec.containers[] | try .env[].value | select(contains($keyword)))"'
 
-# Generate commands for checking logs of affected pods
-kubectl get po -A -o json | jq -r '.items[] | select(.spec.containers[] | try .env[].value | select(. != null) | select(match("jdbc:postgresql"))) | "kubectl -n \(.metadata.namespace) logs \(.metadata.name)"'
-
-# Find applications that use Redis
-kubectl get deploy,ds,sts -A -o json | jq -r '.items[] | "\(.metadata.name) \(.spec.template.spec.containers[] | try .env[].value | select(. != null) | select(match("redis")))"'
-
-# Find pods that use Redis
-kubectl get po -A -o json | jq -r '.items[] | "\(.metadata.name) \(.spec.containers[] | try .env[].value | select(. != null) | select(match("redis")))"'
+# Find pods whose environment variable contains a keyword
+kubectl get po -A -o json | jq -r --arg keyword "${keyword}" '.items[] | "\(.metadata.name) \(.spec.containers[] | select(try .env[].value | contains($keyword)) | .name)"'
 
 # Generate commands for checking logs of affected pods
-kubectl get po -A -o json | jq -r '.items[] | select(.spec.containers[] | try .env[].value | select(. != null) | select(match("redis"))) | "kubectl -n \(.metadata.namespace) logs \(.metadata.name)"'
+kubectl get po -A -o json | jq -r --arg keyword "${keyword}" '.items[] | "kubectl -n \(.metadata.namespace) logs \(.metadata.name) -c \(.spec.containers[] | select(try .env[].value | contains($keyword)) | .name)"'
+```
+
+## Find applications by their ConfigMap
+
+```bash
+keyword=jdbc:postgresql
+keyword=redis
+
+# Find applications whose ConfigMap contains a keyword
+kubectl get cm -A -o json | jq -r --arg keyword "${keyword}" '.items[] | select(try .data[] | contains($keyword)) | "\(.metadata.namespace) \(.metadata.annotations["meta.helm.sh/release-name"] | select(. != null))"'
+
+# Generate commands for checking logs of affected pods (head -n1 assumes that volumes which mount the same configmap also share the same name)
+kubectl get cm -A -o json | jq -r --arg keyword "${keyword}" '.items[] | select(try .data[] | contains($keyword)) | "\(.metadata.namespace) \(.metadata.name)"' | \
+while read -r line ; \
+do namespace="$(echo "${line}" | cut -d' ' -f1)" ; \
+cm_name="$(echo "${line}" | cut -d' ' -f2)" ; \
+vol_name="$(kubectl -n "${namespace}" get deploy,ds,sts -o json | jq -r --arg cm_name "${cm_name}" '.items[].spec.template.spec.volumes[] | select(.configMap.name == $cm_name) | .name' | head -n1)" ; \
+kubectl -n "${namespace}" get po -o json | jq -r --arg cm_name "${cm_name}" --arg vol_name "${vol_name}" '.items[] | select(.spec.volumes[].configMap.name == $cm_name) | "kubectl -n \(.metadata.namespace) logs \(.metadata.name) -c \(.spec.containers[] | select(.volumeMounts[].name == $vol_name) | .name)"' ; \
+done
 ```
