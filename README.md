@@ -7,20 +7,20 @@ keyword=jdbc:postgresql
 keyword=redis
 
 # Find applications whose environment variable contains a keyword
-kubectl get deploy,ds,sts -A -o json | jq -r --arg keyword "${keyword}" '.items[] | "\(.metadata.name) \(.spec.template.spec.containers[] | try .env[].value | select(contains($keyword)))"'
+kubectl get deploy,ds,sts -A -o json | jq -r --arg keyword "${keyword}" '.items[] | "\(.metadata.name) \(.spec.template.spec.containers[] | try .env[].value | select(. != null) | select(contains($keyword)))"'
 
 # Find pods whose environment variable contains a keyword
-kubectl get po -A -o json | jq -r --arg keyword "${keyword}" '.items[] | "\(.metadata.name) \(.spec.containers[] | select(try .env[].value | contains($keyword)) | .name)"'
+kubectl get po -A -o json | jq -r --arg keyword "${keyword}" '.items[] | "\(.metadata.name) \(.spec.containers[] | select(try .env[].value | select(. != null) | contains($keyword)) | .name)"'
 
 # Generate commands for checking logs of affected pods
-kubectl get po -A -o json | jq -r --arg keyword "${keyword}" '.items[] | "kubectl -n \(.metadata.namespace) logs \(.metadata.name) -c \(.spec.containers[] | select(try .env[].value | contains($keyword)) | .name)"'
+kubectl get po -A -o json | jq -r --arg keyword "${keyword}" '.items[] | "kubectl -n \(.metadata.namespace) logs \(.metadata.name) -c \(.spec.containers[] | select(try .env[].value | select(. != null) | contains($keyword)) | .name)"'
 
 # Check logs of affected pods
-kubectl get po -A -o json | jq -r --arg keyword "${keyword}" '.items[] | "kubectl -n \(.metadata.namespace) logs \(.metadata.name) -c \(.spec.containers[] | select(try .env[].value | contains($keyword)) | .name)"' | while read -r command ; do read -p "${command}" </dev/tty ; ${command} | less ; done
+kubectl get po -A -o json | jq -r --arg keyword "${keyword}" '.items[] | "kubectl -n \(.metadata.namespace) logs \(.metadata.name) -c \(.spec.containers[] | select(try .env[].value | select(. != null) | contains($keyword)) | .name)"' | while read -r command ; do read -p "${command}" </dev/tty ; ${command} | less ; done
 
 # Filter logs of affected pods
 filter='error|warn|fail|exit|timeout|refuse|connect'
-kubectl get po -A -o json | jq -r --arg keyword "${keyword}" '.items[] | "kubectl -n \(.metadata.namespace) logs \(.metadata.name) -c \(.spec.containers[] | select(try .env[].value | contains($keyword)) | .name)"' | while read -r command ; do read -p "${command}" </dev/tty ; ${command} | grep -iE "${filter}" ; done
+kubectl get po -A -o json | jq -r --arg keyword "${keyword}" '.items[] | "kubectl -n \(.metadata.namespace) logs \(.metadata.name) -c \(.spec.containers[] | select(try .env[].value | select(. != null) | contains($keyword)) | .name)"' | while read -r command ; do read -p "${command}" </dev/tty ; ${command} | grep -iE "${filter}" ; done
 ```
 
 ## Find applications by their ConfigMap
