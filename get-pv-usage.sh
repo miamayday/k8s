@@ -13,10 +13,10 @@ Usage: ./${0##*/} [-fn]
 
 Check persistent volume usage in cluster and optionally prepare volumes for backup.
 
-  -f  Automatically spawn staging pods to mount standalone volumes in order to check usage.
-  -n  Specify a namespace to reduce the scope of the operation to a single namespace.
-  -h  Print usage message.
-  -v  Enable verbose output.
+  -f             Automatically spawn staging pods to mount standalone volumes in order to check usage.
+  -n             Specify a namespace to reduce the scope of the operation to a single namespace.
+  -h, --help     Print usage message.
+  -v, --verbose  Enable verbose output.
 
 Examples:
 
